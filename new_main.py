@@ -5,9 +5,7 @@ from elasticsearch import Elasticsearch
 import settings
 
 es = Elasticsearch([settings.ES_HOST], port=9200, timeout=300)
-
 file_path = settings.OUTPUT
-
 body = settings.ES_QUERY
 
 
@@ -74,4 +72,5 @@ def read_and_save(size):
     print("************** completed **************")
 
 
-read_and_save(10000)
+if __name__ == '__main__':
+    read_and_save(settings.SCROLL_SIZE)
