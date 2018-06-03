@@ -38,7 +38,7 @@ def write_header_to_csv(filename, header):
         newFileWriter.writerow(header)
 
 
-def read_and_save(size):
+def main(size):
     page = es.search(
         index=settings.ES_INDEX,
         scroll='2m',
@@ -54,23 +54,16 @@ def read_and_save(size):
                          'upload1',
                          'upload2',
                          'download1',
-                         'download2'
-                         ])
-
-    # Start scrolling
+                         'download2'])
     while (scroll_size > 0):
         print("Scrolling...")
         page = es.scroll(scroll_id=sid, scroll='2m')
-        # Update the scroll ID
         sid = page['_scroll_id']
-        # Get the number of results that we returned in the last scroll
         scroll_size = len(page['hits']['hits'])
         print("scroll size: " + str(scroll_size))
-        # Do something with the obtained page
         write_data_to_csv(page['hits']['hits'])
-
     print("************** completed **************")
 
 
 if __name__ == '__main__':
-    read_and_save(settings.SCROLL_SIZE)
+    main(settings.SCROLL_SIZE)
