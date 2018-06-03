@@ -109,8 +109,8 @@ class TestColumns(unittest.TestCase):
         self.assertEqual(1, 1)
 
     def test_get_columns(self):
-        res = query_parser.get_columns()
-        self.assertEqual(res, ['field-1', 'filed-2', 'filed-3', 'filed-4'])
+        res = query_parser.get_columns(QUERY)
+        self.assertListEqual(res, ['field-1', 'field-2', 'field-3', 'field-4'])
         pass
 
 
