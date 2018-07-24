@@ -3,6 +3,7 @@ import csv
 from elasticsearch import Elasticsearch
 
 import settings
+import query_parser as parser
 
 es = Elasticsearch([settings.ES_HOST], port=9200, timeout=300)
 file_path = settings.OUTPUT
@@ -13,16 +14,7 @@ def write_data_to_csv(data):
     with open(file_path, 'a', newline='') as newFile:
         newFileWriter = csv.writer(newFile)
         for row in data:
-            item_row = row
-            newFileWriter.writerow([
-                item_row['_source']['networkName'],
-                item_row['_source']['sourceTcrId'],
-                item_row['_source']['timestamp'],
-                item_row['fields']['upload1'],
-                item_row['fields']['upload2'],
-                item_row['fields']['download1'],
-                item_row['fields']['download2']
-            ])
+            newFileWriter.writerow(parser.get_row(body, row))
 
 
 def silent_remove(filename):
@@ -43,18 +35,12 @@ def main(size):
         index=settings.ES_INDEX,
         scroll='2m',
         size=size,
-        body=body, request_timeout=30)
+        body=body,
+        request_timeout=30)
     sid = page['_scroll_id']
     scroll_size = page['hits']['total']
     silent_remove(file_path)
-    write_header_to_csv(file_path,
-                        ['networkName',
-                         'sourceTcrId',
-                         'timestamp',
-                         'upload1',
-                         'upload2',
-                         'download1',
-                         'download2'])
+    write_header_to_csv(file_path, parser.get_column_names(settings.ES_QUERY))
     while (scroll_size > 0):
         print("Scrolling...")
         page = es.scroll(scroll_id=sid, scroll='2m')

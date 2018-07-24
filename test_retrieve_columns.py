@@ -100,6 +100,20 @@ QUERY = {
     }
 }
 
+ITEM_ROW = {
+    "_source": {
+        "includes-1": "value-11",
+        "includes-2": "value-12",
+        "includes-3": "value-13"
+    },
+    "fields": {
+        "field-1": "value-1",
+        "field-2": "value-2",
+        "field-3": "value-3",
+        "field-4": "value-4"
+    }
+}
+
 
 class TestColumns(unittest.TestCase):
     def setUp(self):
@@ -109,9 +123,13 @@ class TestColumns(unittest.TestCase):
         self.assertEqual(1, 1)
 
     def test_get_columns(self):
-        res = query_parser.get_columns(QUERY)
-        self.assertListEqual(res, ['field-1', 'field-2', 'field-3', 'field-4'])
-        pass
+        res = query_parser.get_column_names(QUERY)
+        self.assertListEqual(res,
+                             ["includes-1", "includes-2", "includes-3", "field-1", "field-2", "field-3", "field-4"])
+
+    def test_get_row(self):
+        res = query_parser.get_row(QUERY, ITEM_ROW)
+        self.assertListEqual(res, ["value-11", "value-12", "value-13", "value-1", "value-2", "value-3", "value-4"])
 
 
 if __name__ == '__main__':
