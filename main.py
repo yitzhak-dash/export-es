@@ -7,16 +7,14 @@ import query_parser as parser
 
 class ExportES:
     def __init__(self, settings):
-        self.settings = settings
+        self.host = settings.ES_HOST
+        self.file_path = settings.OUTPUT
+        self.body = parser.format(settings.ES_QUERY)
+        self.es_index = settings.ES_INDEX
+        self.size = settings.SCROLL_SIZE
 
     def run(self):
-        self.es = Elasticsearch([self.settings.ES_HOST], port=9200, timeout=300)
-
-        self.file_path = self.settings.OUTPUT
-        self.body = parser.format(self.settings.ES_QUERY)
-        self.es_index = self.settings.ES_INDEX
-        self.size = self.settings.SCROLL_SIZE
-
+        self.es = Elasticsearch([self.host], port=9200, timeout=300)
         self.main()
 
     def write_data_to_csv(self, data):
@@ -36,23 +34,29 @@ class ExportES:
             newFileWriter = csv.writer(newFile)
             newFileWriter.writerow(header)
 
-    def main(self):
-        page = self.es.search(
+    def get_page(self):
+        return self.es.search(
             index=self.es_index,
             scroll='2m',
             size=self.size,
             body=self.body,
             request_timeout=30)
+
+    def main(self):
+        page = self.get_page()
         sid = page['_scroll_id']
         scroll_size = page['hits']['total']
+        total_count = page['hits']['total']
+        current_count = 0
         self.silent_remove(self.file_path)
         self.write_header_to_csv(self.file_path, parser.get_column_names(self.body))
+        print("STARTING")
         while (scroll_size > 0):
-            print("Scrolling...")
             page = self.es.scroll(scroll_id=sid, scroll='2m')
             sid = page['_scroll_id']
             scroll_size = len(page['hits']['hits'])
-            print("scroll size: " + str(scroll_size))
+            current_count = current_count + scroll_size
+            completed_percents = (current_count / total_count * 100)
+            print("progress: {0:.2f}%".format(completed_percents))
             self.write_data_to_csv(page['hits']['hits'])
-        print("************** completed **************")
-
+        print("COMPLETED")
