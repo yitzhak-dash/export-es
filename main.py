@@ -51,7 +51,7 @@ class ExportES:
         scroll_size = page['hits']['total']
         total_count = page['hits']['total']
         current_count = 0
-        progress(current_count, total_count, 'bla')
+        progress(current_count, total_count, 'completed')
         self.silent_remove(self.file_path)
         self.write_header_to_csv(self.file_path, parser.get_column_names(self.body))
         while (scroll_size > 0):
@@ -63,15 +63,15 @@ class ExportES:
             progress(current_count, total_count, 'completed')
             # print("progress: {0:.2f}%".format(completed_percents))
             self.write_data_to_csv(page['hits']['hits'])
-        print("\n*********** COMPLETED ***********\n")
+        print("\n*********** COMPLETED ***********")
 
 
 def progress(count, total, status=''):
     bar_len = 60
     filled_len = int(round(bar_len * count / float(total)))
 
-    percents = round(100.0 * count / float(total), 2)
+    percents = 100.0 * count / float(total)
     bar = '=' * filled_len + '-' * (bar_len - filled_len)
 
-    sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', status))
+    sys.stdout.write('[{0}] {1:.2f}% ...{2}\r'.format(bar, percents, status))
     sys.stdout.flush()
