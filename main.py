@@ -1,5 +1,7 @@
 import os
 import csv
+import sys
+
 from elasticsearch import Elasticsearch
 
 import query_parser as parser
@@ -43,20 +45,33 @@ class ExportES:
             request_timeout=30)
 
     def main(self):
+        print("\n*********** STARTING ***********\n")
         page = self.get_page()
         sid = page['_scroll_id']
         scroll_size = page['hits']['total']
         total_count = page['hits']['total']
         current_count = 0
+        progress(current_count, total_count, 'bla')
         self.silent_remove(self.file_path)
         self.write_header_to_csv(self.file_path, parser.get_column_names(self.body))
-        print("STARTING")
         while (scroll_size > 0):
             page = self.es.scroll(scroll_id=sid, scroll='2m')
             sid = page['_scroll_id']
             scroll_size = len(page['hits']['hits'])
             current_count = current_count + scroll_size
             completed_percents = (current_count / total_count * 100)
-            print("progress: {0:.2f}%".format(completed_percents))
+            progress(current_count, total_count, 'completed')
+            # print("progress: {0:.2f}%".format(completed_percents))
             self.write_data_to_csv(page['hits']['hits'])
-        print("COMPLETED")
+        print("\n*********** COMPLETED ***********\n")
+
+
+def progress(count, total, status=''):
+    bar_len = 60
+    filled_len = int(round(bar_len * count / float(total)))
+
+    percents = round(100.0 * count / float(total), 2)
+    bar = '=' * filled_len + '-' * (bar_len - filled_len)
+
+    sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', status))
+    sys.stdout.flush()
