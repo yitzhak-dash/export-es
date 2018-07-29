@@ -6,7 +6,8 @@ OUTPUT = "./output/data.csv"
 
 SCROLL_SIZE = 1000
 
-ES_QUERY = {
+ES_QUERY = '''
+{
     "query": {
         "bool": {
             "filter": [
@@ -151,3 +152,5 @@ ES_QUERY = {
         }
     }
 }
+'''
+
