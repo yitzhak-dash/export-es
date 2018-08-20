@@ -47,6 +47,7 @@ class ExportES:
 
     def run(self):
         print("\n*********** STARTING... ***********\n")
+        print('ES INDEX: {0}'.format(self.es_index))
         page = self.get_page()
         sid = page['_scroll_id']
         scroll_size = page['hits']['total']
@@ -56,6 +57,7 @@ class ExportES:
 
         self.silent_remove(self.file_path)
         self.write_header_to_csv(self.file_path, parser.get_column_names(self.body))
+        self.write_data_to_csv(page['hits']['hits'])
         while (scroll_size > 0):
             page = self.es.scroll(scroll_id=sid, scroll='2m')
             sid = page['_scroll_id']

@@ -10,7 +10,7 @@ class Config:
 
     OUTPUT = "./output/data.csv"
 
-    SCROLL_SIZE = 1000
+    SCROLL_SIZE = 100
 
     ES_QUERY = '''
     {
